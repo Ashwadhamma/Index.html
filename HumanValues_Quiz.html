@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Human Values & Ethics — Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0d1117;--card:#161b22;--card2:#1f2937;
+  --green:#22c55e;--green-dim:#166534;--green-glow:rgba(34,197,94,.18);
+  --gold:#f59e0b;--gold-dim:#92400e;
+  --red:#ef4444;--red-dim:#7f1d1d;
+  --blue:#3b82f6;--blue-dim:#1e3a5f;
+  --text:#f0f6fc;--muted:#8b949e;--border:#30363d;
+  --radius:14px;--trans:.22s cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;
+  background-image:radial-gradient(ellipse at 20% 0%,rgba(34,197,94,.07) 0%,transparent 55%),
+                   radial-gradient(ellipse at 80% 100%,rgba(59,130,246,.07) 0%,transparent 55%)}
+
+/* ── SCROLLBAR ─────── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── SCREEN WRAPPER ── */
+.screen{display:none;animation:fadeUp .45s ease both}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+/* ═══════════════ SETUP SCREEN ══════════════════ */
+#setup{max-width:620px;margin:0 auto;padding:48px 24px}
+.brand{text-align:center;margin-bottom:40px}
+.brand h1{font-family:'Playfair Display',serif;font-size:clamp(28px,5vw,42px);
+  background:linear-gradient(135deg,var(--green) 0%,var(--gold) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.2;margin-bottom:8px}
+.brand p{color:var(--muted);font-size:14px;letter-spacing:.04em}
+
+.setup-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;
+  box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.setup-card h2{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:24px;
+  color:var(--gold)}
+
+.label{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:10px}
+
+/* slider */
+.slider-wrap{position:relative;margin-bottom:28px}
+.q-count-display{font-size:48px;font-family:'Playfair Display',serif;
+  color:var(--green);text-align:center;line-height:1;margin-bottom:12px}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;
+  background:linear-gradient(to right,var(--green) 0%,var(--green) var(--pct,40%),var(--border) var(--pct,40%));
+  border-radius:3px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;
+  border-radius:50%;background:var(--green);border:3px solid var(--bg);
+  box-shadow:0 0 0 3px var(--green-glow);cursor:pointer;transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.slider-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+
+/* unit filter */
+.unit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.unit-btn{background:var(--card2);border:1.5px solid var(--border);border-radius:10px;
+  padding:12px 14px;cursor:pointer;transition:var(--trans);text-align:left;color:var(--text)}
+.unit-btn .unit-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.unit-btn .unit-name{font-size:13px;font-weight:500;margin-top:3px}
+.unit-btn.selected{border-color:var(--green);background:var(--green-glow)}
+.unit-btn.selected .unit-label{color:var(--green)}
+
+/* difficulty */
+.diff-row{display:flex;gap:8px;margin-bottom:28px}
+.diff-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--card2);color:var(--muted);cursor:pointer;font-size:13px;
+  font-weight:500;font-family:'DM Sans',sans-serif;transition:var(--trans)}
+.diff-btn.sel-easy{border-color:var(--green);color:var(--green);background:var(--green-glow)}
+.diff-btn.sel-medium{border-color:var(--gold);color:var(--gold);background:rgba(245,158,11,.12)}
+.diff-btn.sel-hard{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.12)}
+
+/* start btn */
+.start-btn{width:100%;padding:16px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--green),#16a34a);
+  color:#fff;font-size:16px;font-weight:600;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:var(--trans);letter-spacing:.02em}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(34,197,94,.35)}
+.start-btn:disabled{opacity:.4;transform:none;cursor:not-allowed}
+
+/* ═══════════════ QUIZ SCREEN ════════════════════ */
+#quiz{max-width:700px;margin:0 auto;padding:28px 20px 60px}
+
+/* top bar */
+.quiz-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.q-counter{font-family:'Playfair Display',serif;font-size:28px;color:var(--green)}
+.q-counter span{font-size:15px;color:var(--muted);font-family:'DM Sans',sans-serif}
+.unit-tag{font-size:11px;font-weight:600;letter-spacing:.08em;padding:4px 10px;
+  border-radius:20px;background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3)}
+
+.topbar-right{display:flex;align-items:center;gap:14px}
+.timer-wrap{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.timer-dot{width:7px;height:7px;border-radius:50%;background:var(--green);
+  animation:pulse 1.2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.timer-val{font-family:'Playfair Display',serif;font-size:22px;color:var(--text)}
+.timer-val.warn{color:var(--gold);animation:shake .4s ease}
+.timer-val.danger{color:var(--red)}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+/* progress */
+.progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:28px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold));
+  border-radius:2px;transition:width .4s ease}
+
+/* question card */
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:28px;margin-bottom:20px;box-shadow:0 4px 24px rgba(0,0,0,.25)}
+.q-text{font-size:16px;line-height:1.65;font-weight:500}
+
+/* options */
+.options{display:grid;gap:10px;margin-top:20px}
+.opt{position:relative;background:var(--card2);border:1.5px solid var(--border);
+  border-radius:12px;padding:14px 16px;cursor:pointer;
+  display:flex;align-items:center;gap:14px;
+  transition:var(--trans);user-select:none}
+.opt:hover:not(.answered){border-color:var(--blue);background:rgba(59,130,246,.07);
+  transform:translateX(4px)}
+.opt-letter{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;
+  background:var(--border);color:var(--muted);transition:var(--trans)}
+.opt-text{font-size:14px;line-height:1.5;flex:1}
+.opt.correct{border-color:var(--green);background:rgba(34,197,94,.1)}
+.opt.correct .opt-letter{background:var(--green);color:#fff}
+.opt.wrong{border-color:var(--red);background:rgba(239,68,68,.1)}
+.opt.wrong .opt-letter{background:var(--red);color:#fff}
+.opt.answered{cursor:default;transform:none}
+
+.result-icon{margin-left:auto;font-size:18px}
+
+/* hint section */
+.hint-section{margin-top:16px}
+.hint-btn{background:none;border:1.5px dashed var(--gold-dim);color:var(--gold);
+  border-radius:10px;padding:9px 18px;cursor:pointer;font-size:13px;font-weight:500;
+  font-family:'DM Sans',sans-serif;transition:var(--trans);display:flex;align-items:center;gap:8px}
+.hint-btn:hover{border-color:var(--gold);background:rgba(245,158,11,.08)}
+.hint-btn svg{transition:transform .3s}
+.hint-btn.open svg{transform:rotate(180deg)}
+.hint-box{margin-top:10px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);
+  border-radius:10px;padding:14px 16px;font-size:13px;color:var(--gold);
+  line-height:1.6;display:none;animation:fadeUp .25s ease}
+.hint-box.visible{display:block}
+
+/* next btn */
+.next-btn{width:100%;padding:15px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,#1d4ed8,var(--blue));
+  color:#fff;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:var(--trans);margin-top:6px;display:none}
+.next-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(59,130,246,.35)}
+.next-btn.visible{display:block}
+
+/* streak */
+.streak-badge{display:flex;align-items:center;gap:6px;font-size:13px;
+  padding:6px 12px;border-radius:20px;background:rgba(245,158,11,.12);
+  border:1px solid rgba(245,158,11,.3);color:var(--gold)}
+
+/* ═══════════════ RESULTS SCREEN ════════════════ */
+#results{max-width:680px;margin:0 auto;padding:40px 20px 60px;text-align:center}
+.result-ring-wrap{position:relative;width:160px;height:160px;margin:0 auto 28px}
+.ring-svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:12}
+.ring-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
+.ring-pct{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Playfair Display',serif;font-size:36px;font-weight:900}
+.ring-label{font-size:12px;color:var(--muted);margin-top:2px;display:block;text-align:center}
+
+.result-title{font-family:'Playfair Display',serif;font-size:32px;margin-bottom:8px}
+.result-sub{color:var(--muted);font-size:15px;margin-bottom:32px}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+@media(max-width:500px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 12px}
+.stat-val{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:4px}
+.stat-key{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+
+/* review list */
+.review-header{text-align:left;font-family:'Playfair Display',serif;font-size:20px;
+  color:var(--gold);margin-bottom:16px}
+.review-item{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:16px 18px;margin-bottom:12px;text-align:left}
+.review-q{font-size:13px;font-weight:600;margin-bottom:10px;line-height:1.5}
+.review-row{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:5px}
+.tag{padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.tag-correct{background:var(--green-dim);color:var(--green)}
+.tag-wrong{background:var(--red-dim);color:var(--red)}
+.tag-skipped{background:var(--blue-dim);color:var(--blue)}
+
+.action-row{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+.btn-retry{padding:13px 28px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--green),#16a34a);
+  color:#fff;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:var(--trans)}
+.btn-retry:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(34,197,94,.35)}
+.btn-new{padding:13px 28px;border-radius:12px;
+  border:1.5px solid var(--border);background:var(--card2);
+  color:var(--text);font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:var(--trans)}
+.btn-new:hover{border-color:var(--blue);transform:translateY(-2px)}
+
+/* confetti canvas */
+#confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:12px 22px;font-size:13px;font-weight:500;z-index:1000;
+  transition:.3s cubic-bezier(.4,0,.2,1);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+<div class="toast" id="toast"></div>
+
+<!-- ══ SETUP ══════════════════════════════════════════════════ -->
+<div id="setup" class="screen active">
+  <div class="brand">
+    <h1>Human Values &amp; Ethics</h1>
+    <p>Randomised Quiz · All units covered · Instant feedback</p>
+  </div>
+  <div class="setup-card">
+    <h2>⚙️ Configure Your Quiz</h2>
+
+    <div class="label">Number of Questions</div>
+    <div class="slider-wrap">
+      <div class="q-count-display" id="qDisplay">20</div>
+      <input type="range" id="qSlider" min="10" max="50" value="20" step="5"/>
+      <div class="slider-labels"><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span></div>
+    </div>
+
+    <div class="label">Select Units</div>
+    <div class="unit-grid">
+      <button class="unit-btn selected" data-unit="I">
+        <div class="unit-label">Unit I</div>
+        <div class="unit-name">Human Values &amp; Ethics</div>
+      </button>
+      <button class="unit-btn selected" data-unit="II">
+        <div class="unit-label">Unit II</div>
+        <div class="unit-name">Decision Making</div>
+      </button>
+      <button class="unit-btn selected" data-unit="III">
+        <div class="unit-label">Unit III</div>
+        <div class="unit-name">Ecosystem &amp; Environment</div>
+      </button>
+      <button class="unit-btn selected" data-unit="IV">
+        <div class="unit-label">Unit IV</div>
+        <div class="unit-name">Environmental Laws</div>
+      </button>
+    </div>
+
+    <div class="label">Difficulty Mode</div>
+    <div class="diff-row">
+      <button class="diff-btn sel-easy" data-diff="easy">🟢 Easy<br><small>Hints on by default</small></button>
+      <button class="diff-btn" data-diff="medium">🟡 Medium<br><small>1 hint per question</small></button>
+      <button class="diff-btn" data-diff="hard">🔴 Hard<br><small>No hints, no timer reset</small></button>
+    </div>
+
+    <button class="start-btn" id="startBtn">🚀 Start Quiz</button>
+  </div>
+</div>
+
+<!-- ══ QUIZ ══════════════════════════════════════════════════ -->
+<div id="quiz" class="screen">
+  <div class="quiz-topbar">
+    <div class="topbar-left">
+      <div class="q-counter"><span>Q</span><span id="qNum">1</span><span style="font-size:15px"> / </span><span id="qTotal" style="font-family:'DM Sans',sans-serif;font-size:15px;color:var(--muted)">20</span></div>
+      <div class="unit-tag" id="qUnitTag">Unit I</div>
+    </div>
+    <div class="topbar-right">
+      <div class="streak-badge">🔥 <span id="streakVal">0</span></div>
+      <div class="timer-wrap">
+        <div class="timer-dot"></div>
+        <div class="timer-val" id="timerVal">30</div>
+      </div>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="q-card">
+    <div class="q-text" id="qText">Question text</div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <div class="hint-section">
+    <button class="hint-btn" id="hintBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      💡 Show Hint
+    </button>
+    <div class="hint-box" id="hintBox"></div>
+  </div>
+
+  <button class="next-btn" id="nextBtn">Next Question →</button>
+</div>
+
+<!-- ══ RESULTS ════════════════════════════════════════════════ -->
+<div id="results" class="screen">
+  <div class="result-ring-wrap">
+    <svg class="ring-svg" width="160" height="160" viewBox="0 0 160 160">
+      <circle class="ring-bg" cx="80" cy="80" r="68"/>
+      <circle class="ring-fill" id="ringFill" cx="80" cy="80" r="68"
+        stroke-dasharray="427.3" stroke-dashoffset="427.3"/>
+    </svg>
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center">
+      <div class="ring-pct" id="ringPct">0%</div>
+      <span class="ring-label" id="ringGrade">—</span>
+    </div>
+  </div>
+
+  <div class="result-title" id="resultTitle">Great Job!</div>
+  <div class="result-sub" id="resultSub">Here's how you did</div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-val" id="sCorrect" style="color:var(--green)">0</div><div class="stat-key">Correct</div></div>
+    <div class="stat-card"><div class="stat-val" id="sWrong" style="color:var(--red)">0</div><div class="stat-key">Wrong</div></div>
+    <div class="stat-card"><div class="stat-val" id="sSkipped" style="color:var(--blue)">0</div><div class="stat-key">Skipped</div></div>
+    <div class="stat-card"><div class="stat-val" id="sTime" style="color:var(--gold)">0s</div><div class="stat-key">Time Taken</div></div>
+  </div>
+
+  <div class="review-header">📋 Review Your Answers</div>
+  <div id="reviewList"></div>
+
+  <div class="action-row">
+    <button class="btn-retry" id="retryBtn">🔄 Retry Same Config</button>
+    <button class="btn-new" id="newBtn">⚙️ New Quiz Setup</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  ALL 200 QUESTIONS
+// ══════════════════════════════════════════════════════════════
+const ALL_Q = [
+// format: [unit, question, [options], correctIndex, hint]
+["I","What are values?",["Monetary assets","Principles guiding behaviour and decision-making","Government rules","Physical attributes"],1,"Think about what guides our choices in life — not rules, not money, but internal..."],
+["I","Which of the following is NOT a characteristic of values?",["They are enduring","They guide behaviour","They are flexible and situation-specific","They are learned"],2,"Values are known for being stable over time, not situational..."],
+["I","Swami Vivekananda's philosophy emphasises:",["Wealth accumulation","Character building through self-discipline and service","Political activism","Technological progress"],1,"Vivekananda said: 'Be and Make.' Focus on inner development and serving others..."],
+["I","Gandhi's Seven Sins include:",["Politics without principle","Education with knowledge","Religion with devotion","Commerce with ethics"],0,"Gandhi listed NEGATIVE combinations — things done WITHOUT their essential virtue..."],
+["I","APJ Abdul Kalam stressed the role of _______ in shaping a child's values.",["Peers","Parents and Teachers","Government","Media"],1,"Kalam often credited his mother and teachers for shaping his character..."],
+["I","Trans-cultural human values refer to:",["Values specific to one culture","Values that transcend cultural boundaries","Legal norms","Corporate policies"],1,"'Trans' = across. These values are universal, crossing all borders..."],
+["I","A value-based organisation is one that:",["Maximises profit at any cost","Integrates ethical values into its core operations","Ignores employee welfare","Follows only legal requirements"],1,"Think beyond rules — an organisation where ethics is the foundation, not just compliance..."],
+["I","Which act deals with bribery in the UK?",["Companies Act 2006","UK Bribery Act 2010","Data Protection Act","Human Rights Act"],1,"The year is a clue — enacted in 2010, specifically targeting bribery..."],
+["I","Corporate Social Responsibility (CSR) primarily means:",["Paying higher taxes","Business responsibility towards society and environment","Marketing strategy","Cost-cutting measures"],1,"CSR = going beyond legal duty to benefit society — Carroll's pyramid is key here..."],
+["I","Ratan Tata is cited as an example of:",["Political leadership","Modern Business Tycoon with strong CSR","Military strategy","Environmental activism"],1,"Tata Group has long been known for its ethical business and social welfare initiatives..."],
+["I","Spiritual values in management include:",["Focus only on profits","Inner growth, integrity and purposeful leadership","Ignoring employee needs","Maximising shareholder wealth"],1,"Spiritual here doesn't mean religious — it means deeper purpose, integrity, meaning..."],
+["I","Secular values in organisations refer to:",["Religious-based management","Non-religious ethical principles guiding business","Profit-only focus","Technical skills"],1,"'Secular' = non-religious. Think: fairness, transparency, accountability without religion..."],
+["I","Which philosopher wrote 'JUSTICE: What's the Right Thing to Do?'",["Amartya Sen","Michael J. Sandel","Peter Singer","John Rawls"],1,"This is a Harvard course turned into a bestselling book — the professor is famous for public ethics lectures..."],
+["I","Privacy policy in web and social media is an example of:",["Environmental concern","Human values in digital age","Financial regulation","HR policy"],1,"This is about how our personal data is handled — a modern human values issue..."],
+["I","Azim Premji is known for his emphasis on:",["Political power","Ethical business practices and philanthropy","Military leadership","Religious advocacy"],1,"Wipro's founder pledged most of his wealth to education — known as India's most generous billionaire..."],
+["I","Gandhi's Seven Sins — 'Worship without ___'",["Prayer","Sacrifice","Knowledge","Devotion"],1,"Gandhi meant rituals without inner meaning are hollow — what must accompany worship?"],
+["I","Levels of value implementation in an organisation are:",["Individual, group and organisational","National, global and universal","Legal, ethical and religious","Financial, operational and strategic"],0,"Start with the smallest unit — the person — and move outward..."],
+["I","Developing a value system in Indian organisations involves:",["Importing Western practices","Integrating Indian cultural and ethical values","Ignoring tradition","Focusing solely on profits"],1,"The syllabus emphasises Indian organisational values rooted in cultural heritage..."],
+["I","Which of the following is an example of cyber threat?",["Power outage","Phishing and data breaches","Natural disaster","Labour strike"],1,"Cyber threats are digital — phishing, ransomware, data theft are key examples..."],
+["I","Sustainable policies in the Indian Economy aim to:",["Rapid industrialisation at any cost","Balance economic growth with environmental protection","Increase imports","Reduce exports"],1,"'Sustainable' = meeting needs now without compromising the future..."],
+["I","CSR models include phases such as:",["Planning, execution, closure","Philanthropic, ethical, legal, economic","Input, process, output","Hire, train, retain"],1,"Carroll's 4-level CSR pyramid — remember the order from base to top..."],
+["I","Corporate Governance refers to:",["System of rules directing and controlling a company","Marketing strategies","Employee recruitment","Production management"],0,"It's the framework of rules, practices and processes by which a company is directed..."],
+["I","The book 'Human Values' is authored by:",["RR Gaur","A.N. Tripathi","Michael Sandel","N.K. Uberoi"],1,"Check the suggested readings — A.N. Tripathi with New Age International publishers..."],
+["I","The minimum passing marks for this course are:",["50","40","35","45"],1,"Refer to the course syllabus header — Max Marks 100, Min Passing..."],
+["I","Total credits for this course are:",["4","3","2","5"],2,"L-T-P is 2-0-0 — credits match the lecture hours..."],
+["I","The total number of lectures for this course is:",["20","25","30","35"],2,"Sum all unit lectures: check the column 'Total=...' in the syllabus..."],
+["I","The evaluation structure includes Final Exam worth:",["50 marks","60 marks","75 marks","100 marks"],2,"Assignments 10 + Presentation 10 + Attendance 5 + Final Exam = 100..."],
+["I","Which is a suggested reading for this course?",["Rich Dad Poor Dad","JUSTICE by Michael J. Sandel","The Alchemist","7 Habits of Highly Effective People"],1,"Look at the 8 suggested readings in the syllabus — item #2..."],
+["I","Human Values course L-T-P ratio is:",["3-1-0","2-0-0","4-0-0","1-1-1"],1,"L=Lectures, T=Tutorials, P=Practical. Only lectures, no tutorials or practicals..."],
+["I","Which type of values guide relationships in organisations?",["Terminal values","Instrumental values","Cultural values","All of the above"],3,"Rokeach's value theory — terminal (end states) and instrumental (means) both matter..."],
+
+["II","The Bhagavad Gita's approach to management emphasises:",["Action without attachment to results","Profit maximisation","Employee exploitation","Market speculation"],0,"'Nishkama Karma' — do your duty without being attached to rewards..."],
+["II","Holistic decision making considers:",["Only financial factors","Financial, ethical, social and environmental factors","Only legal aspects","Only stakeholder pressure"],1,"'Holistic' = the whole picture. Think across all dimensions, not just money..."],
+["II","Dharma in management refers to:",["Religious rituals","Righteous duty and ethical conduct","Profit motive","Legal compliance only"],1,"Dharma = doing what is right, fulfilling your righteous duty..."],
+["II","A dilemma in business ethics arises when:",["There is a clear right answer","Two or more ethical principles conflict","Laws are clear","Profits are high"],1,"A dilemma = difficult choice between two valid but competing moral paths..."],
+["II","The decision-making process involves which first step?",["Implementing the decision","Identifying the problem","Evaluating outcomes","Selecting alternatives"],1,"You can't solve what you haven't defined — always start by identifying the problem..."],
+["II","Dilemma of privatisation refers to:",["Converting private entities to public","Moving public services to private ownership and its ethical implications","Eliminating competition","Increasing government control"],1,"When governments sell public services — who benefits? Who loses access? That's the dilemma..."],
+["II","Dilemma on organic food involves:",["Choosing between cost and health/environment benefits","Banning all pesticides","Ignoring consumers","Reducing farm land"],0,"Organic = healthier & eco-friendly but expensive. Can everyone afford it?"],
+["II","Case studies in management ethics help students:",["Memorise facts","Apply ethical principles to real situations","Avoid decision-making","Follow rules blindly"],1,"Case studies = learning by doing and analysing — practical ethical reasoning..."],
+["II","Social media dilemma in ethics relates to:",["Freedom of speech vs misinformation and privacy","Only advertising","Technical glitches","Server downtime"],0,"The core tension: free expression vs harm from fake news and privacy invasion..."],
+["II","Holistic Management integrates:",["Only spiritual practices","Spiritual, ethical and practical dimensions of management","Only financial models","Only HR practices"],1,"Holistic = whole-person management combining all dimensions..."],
+["II","The Bhagavad Gita technique in management teaches:",["Avoid all work","Nishkama Karma – selfless action","Exploit resources","Focus on profit only"],1,"Karma Yoga — act selflessly without desire for personal reward..."],
+["II","Pharma organisation dilemmas often involve:",["Pricing medicines ethically vs profit motive","Only production issues","Distribution only","Lab safety"],0,"Should life-saving drugs be priced to cover costs or be affordable to all?"],
+["II","Marketing dilemmas include:",["Truthful advertising vs misleading claims","Only pricing","Distributor selection","Packaging design"],0,"Truth in advertising vs exaggeration for sales — a classic marketing ethics tension..."],
+["II","Cyber security dilemma involves:",["Data privacy vs accessibility","Only hacking","Server maintenance","Hardware issues"],0,"More security often means less convenience and access — how to balance?"],
+["II","Which ancient text is referenced for holistic management techniques?",["Arthashastra","Bhagavad Gita","Manusmriti","Upanishads"],1,"Directly mentioned in the Unit II syllabus for decision-making techniques..."],
+["II","Nishkama Karma means:",["Doing work for reward","Selfless action without attachment to outcome","Avoiding responsibilities","Working for fame"],1,"'Nishkama' = without desire. Karma = action. Do your duty without craving results..."],
+["II","An ethical dilemma is best resolved by:",["Ignoring it","Applying ethical frameworks and stakeholder analysis","Following personal preference","Avoiding the situation"],1,"Use frameworks: utilitarianism, deontology, virtue ethics + consider all stakeholders..."],
+["II","The Bhagavad Gita promotes which leadership quality?",["Authoritarian control","Servant leadership with duty and integrity","Passive management","Profit-first mindset"],1,"Krishna as guide — leads through wisdom, duty and righteousness, not force..."],
+["II","Case study method helps develop:",["Rote learning","Critical thinking and practical application","Memorising laws","Avoiding decisions"],1,"Harvard Business School popularised this method — analyse real situations..."],
+["II","The decision-making process ends with:",["Problem identification","Implementation and evaluation of the decision","Listing alternatives","Gathering data"],1,"The loop closes with: implement → evaluate → feedback for future decisions..."],
+["II","Dilemma on liberalisation involves:",["Opening markets vs protecting local industries","Closing borders","Stopping trade","Only legal issues"],0,"Free trade benefits some, hurts local manufacturers — classic economic ethics tension..."],
+["II","Moving from public to private sector raises concerns about:",["Faster services only","Equity, access and accountability","Technical improvements only","Décor of offices"],1,"Privatisation can improve efficiency but raise questions about fairness and public access..."],
+["II","Holistic approach includes which dimension?",["Only economic","Spiritual, ethical, social and economic","Only social","Only spiritual"],1,"All four: think S.E.S.E — Spiritual, Ethical, Social, Economic..."],
+["II","Standardisation dilemma involves:",["Uniform quality vs local adaptation","Banning all products","Only cost-cutting","No ethical dimension"],0,"Should products/processes be standardised globally or adapted to local needs?"],
+["II","Which thinker's teachings are used for holistic decision-making?",["Chanakya","Lord Krishna / Bhagavad Gita","Karl Marx","Adam Smith"],1,"The Bhagavad Gita is explicitly mentioned in Unit II of the syllabus..."],
+["II","Daniel Kahneman's 'Thinking, Fast and Slow' relates to:",["Environmental science","Decision-making and cognitive biases","Corporate law","Ecosystem ecology"],1,"Kahneman's Nobel-prize-winning work on System 1 (fast/intuitive) vs System 2 (slow/rational) thinking..."],
+
+["III","An ecosystem consists of:",["Only plants","Biotic and abiotic components interacting together","Only animals","Only soil"],1,"Eco = house. A complete system: living things + non-living environment together..."],
+["III","Producers in an ecosystem are:",["Animals that eat plants","Organisms that synthesise food using sunlight (plants)","Decomposers","Carnivores"],1,"Producers = plants. They PRODUCE food via photosynthesis — the base of all food chains..."],
+["III","Consumers in an ecosystem are:",["Organisms that produce their own food","Organisms that obtain energy by eating others","Only bacteria","Only fungi"],1,"Consumers CONSUME others for energy — herbivores, carnivores, omnivores..."],
+["III","Decomposers break down:",["Living organisms","Dead organic matter into simpler substances","Rocks","Water"],1,"Decomposers = nature's recyclers — bacteria and fungi breaking down dead matter..."],
+["III","A food web is:",["A single food chain","A network of interconnected food chains","A spider's web","A marketing tool"],1,"Multiple food chains linked together — more realistic than a single chain..."],
+["III","Energy flow in an ecosystem follows:",["A cycle","A one-way flow from producers to consumers","Random pattern","A two-way flow"],1,"Energy flows in ONE direction: sun → producers → consumers → heat loss..."],
+["III","The 10% energy law states:",["All energy transfers completely","Only 10% of energy passes to the next trophic level","Energy doubles at each level","No energy is lost"],1,"Lindeman's law — 90% lost as heat, only 10% moves up each level..."],
+["III","Ecological pyramids represent:",["Only population numbers","Number, biomass or energy at each trophic level","Mountain ecosystems","Pyramid-shaped buildings"],1,"Three types: pyramid of numbers, biomass and energy..."],
+["III","In-situ conservation means:",["Conserving species outside their natural habitat","Conserving species within their natural habitat","Zoos and botanical gardens","Laboratory conservation"],1,"'In situ' = Latin for 'in place' — protect species where they naturally live..."],
+["III","Ex-situ conservation means:",["Conserving in natural habitats","Conserving outside natural habitat (e.g. zoos, seed banks)","Forest protection","River conservation"],1,"'Ex situ' = outside the place — zoos, seed banks, gene banks..."],
+["III","Biodiversity refers to:",["Variety of species and ecosystems","Only animal species","Only plant species","Only marine life"],0,"Bio = life, diversity = variety. Includes ALL living things and their ecosystems..."],
+["III","Sustainable Development means:",["Development that depletes resources","Meeting present needs without compromising future generations","Rapid industrialisation","Ignoring environment"],1,"The famous Brundtland definition — balance between now and the future..."],
+["III","UN Sustainable Development Goals (SDGs) total:",["10","17","20","15"],1,"17 goals adopted in 2015 as part of the 2030 Agenda — memorise this number!"],
+["III","Circular economy aims at:",["Linear take-make-dispose model","Reducing waste by reusing, recycling and regenerating resources","Increasing production","Maximising extraction"],1,"The OPPOSITE of linear — circular = resources stay in use as long as possible..."],
+["III","Role of individual in pollution control includes:",["Only government action needed","Reducing personal waste, using public transport, conserving energy","Increasing consumption","Burning waste"],1,"Individual action matters: 3Rs, public transport, energy conservation, planting trees..."],
+["III","Ecological pyramid of numbers shows:",["Biomass at each level","Number of organisms at each trophic level","Energy flow","Chemical cycles"],1,"Count the organisms at each level — grass > grasshoppers > frogs > snakes..."],
+["III","Biomass pyramid represents:",["Number of species","Total living matter at each trophic level","Energy loss","Population density"],1,"Biomass = total mass of living organisms. Usually decreases up the pyramid..."],
+["III","Energy pyramid is always:",["Inverted","Upright (producers have most energy)","Diamond-shaped","Horizontal"],1,"Energy always decreases up — producers have most, so it's always upright..."],
+["III","Conservation of biodiversity is important because:",["It has no importance","It maintains ecosystem services and genetic diversity","It increases pollution","It reduces food production"],1,"Biodiversity underpins food, medicine, clean water, climate regulation..."],
+["III","Sustainable Development Goal 7 relates to:",["Zero hunger","Affordable and clean energy","Life below water","Good health"],1,"SDG 7 = Energy for all, clean and renewable. Memorise a few key SDG numbers..."],
+["III","Circular economy principles include:",["Reduce, Reuse, Recycle and Regenerate","Only recycling","Only reducing","Burning waste"],0,"The 4 Rs of circular economy — goes beyond just recycling..."],
+["III","Which is an example of ex-situ conservation?",["National Park","Seed bank and Zoological Park","Wildlife Sanctuary","Biosphere Reserve"],1,"Seed banks and zoos = outside natural habitat = ex-situ..."],
+["III","Which is an example of in-situ conservation?",["Zoo","Seed bank","National Park / Biosphere Reserve","Aquarium"],2,"National Parks and Biosphere Reserves protect species IN their natural home..."],
+["III","The 17 UN SDGs are part of the ______ Agenda.",["2020","2025","2030","2050"],2,"The 2030 Agenda for Sustainable Development — adopted by all UN member states in 2015..."],
+["III","Pollution control individual measures include:",["Burning plastics","Segregating waste, saving water, using renewable energy","Increasing vehicle use","Deforestation"],1,"Simple daily actions: sort your waste, conserve water, use less electricity..."],
+["III","Sustainable Development integrates how many pillars?",["Two","Three (economic, social, environmental)","Four","Five"],1,"The 3 pillars: People (Social) + Planet (Environmental) + Profit (Economic)..."],
+["III","Primary consumers eat:",["Other animals","Plants (herbivores)","Decomposers","Producers and consumers both"],1,"Primary = first. They eat producers (plants) directly — herbivores like cows, deer..."],
+["III","What is the primary driver of biodiversity loss globally?",["Natural disasters","Habitat destruction due to human activities","Volcanic eruptions","Asteroid impacts"],1,"Habitat loss (deforestation, urbanisation) is the #1 threat to biodiversity..."],
+
+["IV","The National Green Tribunal (NGT) was established in:",["2005","2010","2015","2000"],1,"NGT Act was passed in 2010 — a landmark for environmental justice in India..."],
+["IV","NGT primarily deals with:",["Criminal cases","Environmental disputes and enforcement of environmental laws","Tax disputes","Labour issues"],1,"NGT = specialised court for environmental cases only, fast-tracks environmental justice..."],
+["IV","Air Quality Index (AQI) measures:",["Water quality","Air pollution level and its health impact","Noise levels","Soil quality"],1,"AQI = tool to communicate how polluted the air is and its effect on health..."],
+["IV","A higher AQI value indicates:",["Better air quality","Worse/more polluted air quality","No pollution","Optimal conditions"],1,"Scale 0-500: 0 = best, 500+ = most hazardous. Higher = worse!"],
+["IV","Environmental Impact Assessment (EIA) is done:",["After a project is completed","Before a project begins to assess environmental consequences","During operation only","For marketing purposes"],1,"EIA is PRE-project — assess before you build, not after damage is done..."],
+["IV","Environmental Audit refers to:",["Financial audit of environment ministry","Systematic evaluation of organisation's environmental performance","Building audit","Product audit"],1,"Like a financial audit but for environment — how well is the org managing its impact?"],
+["IV","Environmental Management System (EMS) helps organisations:",["Increase pollution","Manage and reduce environmental impact systematically","Increase resource use","Ignore regulations"],1,"EMS = systematic framework to control and improve environmental performance..."],
+["IV","ISO 14001 is a standard for:",["Quality management","Environmental Management Systems","Food safety","Information security"],1,"ISO 14001 = the international standard for EMS. ISO 9001 = quality. Don't confuse them!"],
+["IV","Bioassessment of Environmental Quality uses:",["Chemical tests only","Biological organisms as indicators of environmental health","Physical measurements","Satellite imagery"],1,"Bio = biological. Use living organisms (lichens, fish) as indicators of environmental health..."],
+["IV","Indian Traditional Knowledge (ITK) about environment includes:",["Modern industrial practices","Indigenous methods of resource conservation and sustainable living","Western agricultural practices","Digital solutions"],1,"Centuries of wisdom: sacred groves, rainwater harvesting, crop rotation..."],
+["IV","The Paris Agreement (2015) aims at:",["Military cooperation","Limiting global temperature rise to well below 2°C","Space exploration","Trade agreements"],1,"Key goal: keep warming well below 2°C, ideally 1.5°C above pre-industrial levels..."],
+["IV","Environmental laws in India include:",["Only tax laws","Environment Protection Act, Air Act, Water Act","Criminal laws only","Labour laws"],1,"India has a comprehensive set of environmental laws — EP Act 1986 is the umbrella law..."],
+["IV","Environment Protection Act in India was enacted in:",["1972","1986","2000","1992"],1,"EP Act 1986 — passed after the Bhopal gas tragedy (1984) as a wake-up call..."],
+["IV","AQI categories include:",["Good, Moderate, Unhealthy, Hazardous","Excellent, Average, Poor only","Only Good and Bad","Numeric only"],0,"India has 6 AQI categories: Good, Satisfactory, Moderate, Poor, Very Poor, Severe..."],
+["IV","Carbon footprint refers to:",["Footprints on carbon paper","Total greenhouse gases emitted by an individual or organisation","Only CO2 emissions from cars","Soil carbon content"],1,"All GHG emissions expressed as CO2 equivalent — your personal climate impact..."],
+["IV","The Kyoto Protocol is related to:",["Nuclear weapons","Reduction of greenhouse gas emissions","Water conservation","Biodiversity"],1,"First binding international treaty on GHG reduction — led to carbon credits..."],
+["IV","Role of NGT includes:",["Only advisory functions","Adjudicating disputes related to environment and enforcement of environmental laws","Tax collection","Trade regulation"],1,"NGT has judicial powers — can impose fines, direct clean-up, enforce laws..."],
+["IV","Environmental Management System follows which cycle?",["SWOT","Plan-Do-Check-Act (PDCA)","PEST","BCG"],1,"PDCA = Deming's quality cycle applied to environmental management..."],
+["IV","Bio-assessment uses organisms such as:",["Only bacteria","Indicator species like lichens, fish, macroinvertebrates","Only plants","Only viruses"],1,"Lichens disappear in polluted air — nature's own pollution detectors..."],
+["IV","Environmental Impact Assessment is mandatory for:",["Small businesses","Large projects like industries, dams, highways","Residential homes","Retail shops"],1,"EIA required for projects with significant environmental impact under EP Act..."],
+["IV","The 'polluter pays' principle means:",["Government pays for pollution","The entity causing pollution bears the cost of remediation","Consumers pay extra taxes","Banks fund clean-up"],1,"Accountability principle: cause the pollution → pay for the clean-up..."],
+["IV","Sustainable Development Goal 13 is about:",["No poverty","Climate action","Zero hunger","Clean water"],1,"SDG 13 = Climate Action — urgent action to combat climate change..."],
+["IV","NGT has jurisdiction over:",["Only Delhi","All States and Union Territories of India","Only Metro cities","Only coastal areas"],1,"NGT has pan-India jurisdiction — can hear cases from any state or UT..."],
+["IV","Which gas is primarily responsible for the greenhouse effect?",["Nitrogen","Carbon dioxide (CO2)","Oxygen","Argon"],1,"CO2 is the primary greenhouse gas — though methane is more potent per molecule..."],
+["IV","The Kyoto Protocol carbon credits mechanism allows:",["Countries to pollute freely","Countries to buy/sell emission reduction credits","Countries to ignore targets","Only developed nations to act"],1,"Carbon credits = tradeable permits to emit. Countries that reduce more can sell credits..."],
+["IV","NGT Act was passed in:",["2005","2010","2012","2015"],1,"The National Green Tribunal Act 2010 — established the NGT as a specialised body..."],
+["IV","Carbon credits are a mechanism under which agreement?",["Paris Agreement","Kyoto Protocol","Montreal Protocol","Basel Convention"],1,"Kyoto Protocol introduced the carbon credit/trading mechanism..."],
+["IV","Green economy aims at:",["High carbon emissions","Low carbon, resource-efficient and socially inclusive economy","Rapid industrialisation","Deforestation for growth"],1,"Green economy = economic growth decoupled from environmental damage..."],
+["IV","The Air Act in India was enacted in:",["1981","1986","1972","1990"],0,"Air (Prevention and Control of Pollution) Act 1981 — specifically for air quality..."],
+["IV","Which is a renewable resource?",["Coal","Solar energy","Natural gas","Petroleum"],1,"Solar, wind, hydro, geothermal = renewable. Coal, gas, oil = finite/non-renewable..."],
+];
+
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+let cfg={}, quizQ=[], idx=0, score=0, streak=0, maxStreak=0,
+    hintUsed=false, answered=false, timerID=null, timeLeft=0,
+    startTime=0, results=[], diffSel='easy';
+
+const TIMER={easy:40,medium:30,hard:20};
+const HINT_LIMIT={easy:Infinity,medium:1,hard:0};
+
+// ══════════════════════════════════════════════════════════════
+//  SETUP SCREEN
+// ══════════════════════════════════════════════════════════════
+const slider=document.getElementById('qSlider');
+const qDisplay=document.getElementById('qDisplay');
+slider.addEventListener('input',()=>{
+  qDisplay.textContent=slider.value;
+  const pct=((slider.value-10)/(50-10))*100;
+  slider.style.setProperty('--pct',pct+'%');
+});
+// init
+slider.style.setProperty('--pct','25%');
+
+document.querySelectorAll('.unit-btn').forEach(b=>b.addEventListener('click',()=>{
+  b.classList.toggle('selected');
+  validateStart();
+}));
+
+let hintCounts={};
+document.querySelectorAll('.diff-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.diff-btn').forEach(x=>x.className='diff-btn');
+  diffSel=b.dataset.diff;
+  b.classList.add('sel-'+diffSel);
+}));
+
+function validateStart(){
+  const any=[...document.querySelectorAll('.unit-btn.selected')].length>0;
+  document.getElementById('startBtn').disabled=!any;
+}
+
+document.getElementById('startBtn').addEventListener('click',startQuiz);
+
+function startQuiz(){
+  const units=[...document.querySelectorAll('.unit-btn.selected')].map(b=>b.dataset.unit);
+  const pool=ALL_Q.filter(q=>units.includes(q[0]));
+  if(pool.length===0){showToast('No questions in selected units!');return;}
+  const count=Math.min(parseInt(slider.value),pool.length);
+  // shuffle pool
+  const shuffled=shuffle([...pool]);
+  quizQ=shuffled.slice(0,count).map(q=>{
+    // randomise option order
+    const opts=q[2].map((o,i)=>({text:o,orig:i}));
+    const sOpts=shuffle(opts);
+    const newAns=sOpts.findIndex(o=>o.orig===q[3]);
+    return {unit:q[0],q:q[1],opts:sOpts.map(o=>o.text),ans:newAns,hint:q[4]};
+  });
+  idx=0;score=0;streak=0;maxStreak=0;results=[];hintCounts={};
+  startTime=Date.now();
+  show('quiz');
+  renderQ();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  QUIZ
+// ══════════════════════════════════════════════════════════════
+function renderQ(){
+  clearInterval(timerID);
+  answered=false;hintUsed=false;
+  const q=quizQ[idx];
+  document.getElementById('qNum').textContent=idx+1;
+  document.getElementById('qTotal').textContent=quizQ.length;
+  document.getElementById('qUnitTag').textContent='Unit '+q.unit;
+  document.getElementById('progressFill').style.width=((idx/quizQ.length)*100)+'%';
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('streakVal').textContent=streak;
+
+  // options
+  const container=document.getElementById('options');
+  container.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const div=document.createElement('div');
+    div.className='opt';
+    div.innerHTML=`<div class="opt-letter">${'ABCD'[i]}</div><div class="opt-text">${o}</div><div class="result-icon"></div>`;
+    div.addEventListener('click',()=>selectAns(i,div));
+    container.appendChild(div);
+  });
+
+  // hint
+  const hBtn=document.getElementById('hintBtn');
+  const hBox=document.getElementById('hintBox');
+  hBox.classList.remove('visible');hBox.textContent='';
+  hBtn.classList.remove('open');
+  const limit=HINT_LIMIT[diffSel];
+  const used=hintCounts[idx]||0;
+  hBtn.style.display=(limit===0||(limit!==Infinity&&used>=limit))&&!answered?'none':'flex';
+  hBtn.onclick=()=>toggleHint(q,idx);
+
+  document.getElementById('nextBtn').classList.remove('visible');
+  startTimer();
+}
+
+function startTimer(){
+  timeLeft=TIMER[diffSel];
+  updateTimerUI();
+  timerID=setInterval(()=>{
+    timeLeft--;
+    updateTimerUI();
+    if(timeLeft<=0){
+      clearInterval(timerID);
+      if(!answered)timeoutQ();
+    }
+  },1000);
+}
+
+function updateTimerUI(){
+  const el=document.getElementById('timerVal');
+  el.textContent=timeLeft;
+  el.className='timer-val';
+  if(timeLeft<=10)el.classList.add('danger');
+  else if(timeLeft<=15)el.classList.add('warn');
+}
+
+function timeoutQ(){
+  answered=true;
+  const q=quizQ[idx];
+  markOptions(q.ans,-1);
+  streak=0;document.getElementById('streakVal').textContent=0;
+  results.push({q:q.q,opts:q.opts,correct:q.ans,chosen:-1,status:'skipped'});
+  showToast('⏰ Time\'s up! Answer skipped.');
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+function selectAns(i,div){
+  if(answered)return;
+  answered=true;
+  clearInterval(timerID);
+  const q=quizQ[idx];
+  const correct=i===q.ans;
+  markOptions(q.ans,i);
+  if(correct){
+    score++;streak++;
+    if(streak>maxStreak)maxStreak=streak;
+    document.getElementById('streakVal').textContent=streak;
+    showToast(streak>=3?`🔥 ${streak} in a row! On fire!`:'✅ Correct!');
+    results.push({q:q.q,opts:q.opts,correct:q.ans,chosen:i,status:'correct'});
+  }else{
+    streak=0;document.getElementById('streakVal').textContent=0;
+    showToast('❌ Wrong! The correct answer is highlighted.');
+    results.push({q:q.q,opts:q.opts,correct:q.ans,chosen:i,status:'wrong'});
+  }
+  document.getElementById('nextBtn').classList.add('visible');
+  document.getElementById('hintBtn').style.display='none';
+}
+
+function markOptions(correct,chosen){
+  document.querySelectorAll('.opt').forEach((el,i)=>{
+    el.classList.add('answered');
+    const icon=el.querySelector('.result-icon');
+    if(i===correct){el.classList.add('correct');icon.textContent='✔';}
+    else if(i===chosen){el.classList.add('wrong');icon.textContent='✘';}
+  });
+}
+
+function toggleHint(q,qi){
+  const hBtn=document.getElementById('hintBtn');
+  const hBox=document.getElementById('hintBox');
+  if(hBox.classList.contains('visible')){
+    hBox.classList.remove('visible');hBtn.classList.remove('open');
+  }else{
+    hBox.textContent='💡 '+q.hint;
+    hBox.classList.add('visible');hBtn.classList.add('open');
+    if(!hintUsed){
+      hintUsed=true;
+      hintCounts[qi]=(hintCounts[qi]||0)+1;
+      if(HINT_LIMIT[diffSel]!==Infinity&&hintCounts[qi]>=HINT_LIMIT[diffSel]){
+        hBtn.style.display='none';
+      }
+    }
+  }
+}
+
+document.getElementById('nextBtn').addEventListener('click',()=>{
+  idx++;
+  if(idx>=quizQ.length)showResults();
+  else renderQ();
+});
+
+// ══════════════════════════════════════════════════════════════
+//  RESULTS
+// ══════════════════════════════════════════════════════════════
+function showResults(){
+  clearInterval(timerID);
+  show('results');
+  const total=quizQ.length;
+  const correct=results.filter(r=>r.status==='correct').length;
+  const wrong=results.filter(r=>r.status==='wrong').length;
+  const skipped=results.filter(r=>r.status==='skipped').length;
+  const pct=Math.round((correct/total)*100);
+  const elapsed=Math.round((Date.now()-startTime)/1000);
+
+  // ring
+  const ring=document.getElementById('ringFill');
+  const circ=2*Math.PI*68;
+  ring.setAttribute('stroke-dasharray',circ);
+  const color=pct>=80?'#22c55e':pct>=60?'#f59e0b':'#ef4444';
+  ring.setAttribute('stroke',color);
+  setTimeout(()=>{ring.style.strokeDashoffset=circ-(circ*pct/100);},100);
+  document.getElementById('ringPct').textContent=pct+'%';
+  document.getElementById('ringPct').style.color=color;
+
+  const grade=pct>=90?'S':pct>=80?'A':pct>=70?'B':pct>=60?'C':pct>=40?'D':'F';
+  document.getElementById('ringGrade').textContent='Grade '+grade;
+
+  const msgs={S:'🏆 Outstanding!',A:'🎉 Excellent!',B:'😊 Well Done!',C:'👍 Good Effort!',D:'📖 Keep Studying',F:'💪 Don\'t Give Up!'};
+  document.getElementById('resultTitle').textContent=msgs[grade];
+  document.getElementById('resultSub').textContent=`${correct} correct · ${wrong} wrong · ${skipped} skipped · Best streak: ${maxStreak}`;
+
+  document.getElementById('sCorrect').textContent=correct;
+  document.getElementById('sWrong').textContent=wrong;
+  document.getElementById('sSkipped').textContent=skipped;
+  document.getElementById('sTime').textContent=elapsed+'s';
+
+  // review
+  const list=document.getElementById('reviewList');list.innerHTML='';
+  results.forEach((r,i)=>{
+    const div=document.createElement('div');div.className='review-item';
+    const statusTag=r.status==='correct'?'<span class="tag tag-correct">✔ Correct</span>':
+      r.status==='wrong'?'<span class="tag tag-wrong">✘ Wrong</span>':
+      '<span class="tag tag-skipped">⏰ Skipped</span>';
+    div.innerHTML=`<div class="review-q">Q${i+1}. ${r.q}</div>
+      <div class="review-row">${statusTag}
+        <span style="color:var(--green);font-size:12px">✔ ${r.opts[r.correct]}</span>
+      </div>
+      ${r.status==='wrong'?`<div class="review-row"><span style="color:var(--muted);font-size:12px">Your answer: ${r.opts[r.chosen]}</span></div>`:''}`;
+    list.appendChild(div);
+  });
+
+  if(pct>=80)launchConfetti();
+}
+
+document.getElementById('retryBtn').addEventListener('click',()=>{startQuiz();});
+document.getElementById('newBtn').addEventListener('click',()=>{show('setup');});
+
+// ══════════════════════════════════════════════════════════════
+//  UTILITIES
+// ══════════════════════════════════════════════════════════════
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
+  const el=document.getElementById(id);el.style.display='block';
+  requestAnimationFrame(()=>el.classList.add('active'));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ── CONFETTI ──────────────────────────────────────────────────
+function launchConfetti(){
+  const canvas=document.getElementById('confetti-canvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const pieces=Array.from({length:120},()=>({
+    x:Math.random()*canvas.width,y:-10,
+    r:Math.random()*6+3,
+    d:Math.random()*8+2,
+    color:`hsl(${Math.random()*360},80%,60%)`,
+    tilt:Math.random()*10-5,
+    spin:Math.random()*.2-.1
+  }));
+  let frame=0;
+  const anim=setInterval(()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.color;ctx.fill();
+      p.y+=p.d;p.x+=Math.sin(frame*0.03)*1.5;p.tilt+=p.spin;
+    });
+    frame++;
+    if(frame>180){clearInterval(anim);ctx.clearRect(0,0,canvas.width,canvas.height);}
+  },16);
+}
+</script>
+</body>
+</html>
